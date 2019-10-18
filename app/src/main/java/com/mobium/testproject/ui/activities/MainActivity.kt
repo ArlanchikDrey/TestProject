@@ -50,11 +50,14 @@ class MainActivity : AppCompatActivity() {
                         if (job != null){
                             progress_connected.visibility = View.GONE
                         }
+                        if(job?.size == 0)
+                            Snackbar.make(btn_search, "Запрос неверный или такой вакансии нет",Snackbar.LENGTH_LONG).show()
+
                         adapterJobs.update(job)
                     }
 
                     override fun onFailure(call: Call<List<JobItem>>, t: Throwable) {
-                        Toast.makeText(this@MainActivity, "error", Toast.LENGTH_SHORT).show()
+                        Snackbar.make(btn_search, "error \n ${t.message}",Snackbar.LENGTH_LONG).show()
                     }
                 })
         }else{
