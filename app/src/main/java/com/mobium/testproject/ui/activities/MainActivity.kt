@@ -16,11 +16,17 @@ import com.mobium.testproject.utils.Utils
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import androidx.recyclerview.widget.RecyclerView
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapterJobs: AdapterJobs
+    private var loading = true
+    private var pastVisiblesItems = 0
+    private var visibleItemCount = 0
+    private var totalItemCount = 0
+    private val myLinerLayoutManag = LinearLayoutManager(this@MainActivity)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         btn_search.setOnClickListener {
             connectedWithApi()
         }
+        scrollRecycler()
     }
 
     //Отправляем запрос если есть интернет
@@ -78,9 +85,30 @@ class MainActivity : AppCompatActivity() {
 
         with(recyclerListJobs) {
             adapter = adapterJobs
-            layoutManager = LinearLayoutManager(this@MainActivity)
+            layoutManager = myLinerLayoutManag
             addItemDecoration(divider)
         }
+    }
+
+    //реализация бесконечного списка
+    private fun scrollRecycler(){
+        recyclerListJobs.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (dy > 0){
+                    visibleItemCount = myLinerLayoutManag.childCount
+                    totalItemCount = myLinerLayoutManag.itemCount
+                    pastVisiblesItems = myLinerLayoutManag.findFirstVisibleItemPosition()
+
+                    if (loading){
+                        if ((visibleItemCount + pastVisiblesItems) >= totalItemCount){
+                            loading = false
+                            Toast.makeText(this@MainActivity,"last",Toast.LENGTH_SHORT).show()
+                            connectedWithApi()
+                        }
+                    }
+                }
+            }
+        })
     }
 }
 
