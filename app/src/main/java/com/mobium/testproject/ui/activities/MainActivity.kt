@@ -90,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    //реализация бесконечного списка
+    //реализация бесконечного list'a
     private fun scrollRecycler(){
         recyclerListJobs.addOnScrollListener(object : RecyclerView.OnScrollListener(){
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
