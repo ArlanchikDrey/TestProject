@@ -13,6 +13,7 @@ class JobAcitivity : AppCompatActivity() {
         const val DESC = "DESC"
         const val LOGO = "LOGO"
         const val TITLE = "TITLE"
+        const val POSITION_Y = "POSITION_Y"
     }
     private var url: String? = null
     private var title: String? = null
@@ -49,6 +50,20 @@ class JobAcitivity : AppCompatActivity() {
         outState.putString(LOGO, url)
         outState.putString(TITLE, title)
         outState.putString(DESC, desc)
+        outState.putIntArray(POSITION_Y, intArrayOf(scrollView.scrollX, scrollView.scrollY))
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        val position = savedInstanceState?.getIntArray(POSITION_Y)
+        if (position != null){
+            scrollView.post {
+                scrollView.scrollTo(position[0],position[1])
+            }
+            
+        }
+
     }
 
 }

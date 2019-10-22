@@ -17,7 +17,8 @@
             android:label="Описание"></activity>
         <activity
             android:name=".ui.activities.SplashActivity"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/SplashTheme"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -26,8 +27,7 @@
         </activity>
         <activity
             android:name=".ui.activities.MainActivity"
-            android:label="Поиск вакансии"
-            android:screenOrientation="portrait"></activity>
+            android:label="Поиск вакансии"></activity>
     </application>
 
 </manifest>
