@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         scrollRecycler()
     }
 
-    //Отправляем запрос если есть инет
+    //Отправляем запрос если есть интернет
     private fun connectedWithApi(){
         if (Utils.hasConnection(this)){
             progress_connected.visibility = View.VISIBLE
