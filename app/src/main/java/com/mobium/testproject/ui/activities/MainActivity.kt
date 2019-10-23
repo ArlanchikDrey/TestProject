@@ -3,6 +3,7 @@ package com.mobium.testproject.ui.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mobium.testproject.data.NetworkService
@@ -17,11 +18,13 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import androidx.recyclerview.widget.RecyclerView
+import java.util.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapterJobs: AdapterJobs
+    private var list: List<JobItem>? = null
     private var loading = true
     private var pastVisiblesItems = 0
     private var visibleItemCount = 0
@@ -54,6 +57,7 @@ class MainActivity : AppCompatActivity() {
                 .enqueue(object : Callback<List<JobItem>> {
                     override fun onResponse(call: Call<List<JobItem>>, response: Response<List<JobItem>>) {
                         val job = response.body()
+                        list = job
                         if (job != null){
                             progress_connected.visibility = View.GONE
                         }
@@ -71,6 +75,17 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(btn_search, "Нету связи",Snackbar.LENGTH_LONG).show()
         }
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelableArrayList("array",list as ArrayList<out Parcelable>)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        val jobs = savedInstanceState?.getParcelableArrayList<JobItem>("array")
+        adapterJobs.update(jobs)
     }
 
     private fun initRecycler() {

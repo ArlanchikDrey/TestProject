@@ -1,9 +1,12 @@
 package com.mobium.testproject.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class JobItem {
+public class JobItem implements Parcelable {
     @SerializedName("id")
     @Expose
     private String id;
@@ -31,6 +34,42 @@ public class JobItem {
         this.description = description;
         this.companyLogo = companyLogo;
     }
+
+    protected JobItem(Parcel in) {
+        id = in.readString();
+        company = in.readString();
+        location = in.readString();
+        title = in.readString();
+        description = in.readString();
+        companyLogo = in.readString();
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(company);
+        dest.writeString(location);
+        dest.writeString(title);
+        dest.writeString(description);
+        dest.writeString(companyLogo);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<JobItem> CREATOR = new Creator<JobItem>() {
+        @Override
+        public JobItem createFromParcel(Parcel in) {
+            return new JobItem(in);
+        }
+
+        @Override
+        public JobItem[] newArray(int size) {
+            return new JobItem[size];
+        }
+    };
 
     public String getId() {
         return id;
