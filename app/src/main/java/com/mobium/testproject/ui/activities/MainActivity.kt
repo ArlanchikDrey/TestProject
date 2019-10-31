@@ -4,9 +4,9 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.mobium.testproject.data.NetworkService
 import com.mobium.testproject.ui.adapters.AdapterJobs
 import kotlinx.android.synthetic.main.activity_main.*
 import android.view.View
@@ -18,28 +18,34 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import androidx.recyclerview.widget.RecyclerView
+import com.mobium.testproject.data.JobsApi
+import com.mobium.testproject.data.components.DaggerJobsComponent
+import com.mobium.testproject.data.modules.ApplicationContextModule
+import com.squareup.picasso.Picasso
+import timber.log.Timber
 import java.util.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var adapterJobs: AdapterJobs
-    private var list: List<JobItem>? = null
     private var loading = true
     private var pastVisiblesItems = 0
     private var visibleItemCount = 0
     private var totalItemCount = 0
     private val myLinerLayoutManag = LinearLayoutManager(this@MainActivity)
+    private lateinit var picasso: Picasso
+    private lateinit var jobsApi: JobsApi
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.mobium.testproject.R.layout.activity_main)
-
+        Log.d("tag","create")
         initView()
     }
 
     private fun initView() {
-        initRecycler()
         btn_search.setOnClickListener {
             connectedWithApi()
         }
@@ -50,46 +56,46 @@ class MainActivity : AppCompatActivity() {
     private fun connectedWithApi(){
         if (Utils.hasConnection(this)){
             progress_connected.visibility = View.VISIBLE
-            NetworkService
-                .getInstance()
-                .jobsApi
-                .getJobs(autoCompleteTextView.text.toString())
-                .enqueue(object : Callback<List<JobItem>> {
-                    override fun onResponse(call: Call<List<JobItem>>, response: Response<List<JobItem>>) {
-                        val job = response.body()
-                        list = job
-                        if (job != null){
-                            progress_connected.visibility = View.GONE
-                        }
-                        if(job?.size == 0)
-                            Snackbar.make(btn_search, "Запрос неверный или такой вакансии нет",Snackbar.LENGTH_LONG).show()
-
-                        adapterJobs.update(job)
-                    }
-
-                    override fun onFailure(call: Call<List<JobItem>>, t: Throwable) {
-                        Snackbar.make(btn_search, "error \n ${t.message}",Snackbar.LENGTH_LONG).show()
-                    }
-                })
+            createConnected()
+            createCalls()
         }else{
             Snackbar.make(btn_search, "Нету связи",Snackbar.LENGTH_LONG).show()
         }
 
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putParcelableArrayList("array",list as ArrayList<out Parcelable>)
+    private fun createCalls() {
+        val jobsCalls = jobsApi.getJobs(autoCompleteTextView.text.toString())
+        jobsCalls.enqueue(object : Callback<List<JobItem>> {
+            override fun onResponse(call: Call<List<JobItem>>, response: Response<List<JobItem>>) {
+                val job = response.body()
+                if (job != null){
+                    progress_connected.visibility = View.GONE
+                }
+                if(job?.size == 0)
+                    Snackbar.make(btn_search, "Запрос неверный или такой вакансии нет",Snackbar.LENGTH_LONG).show()
+
+                adapterJobs.update(job)
+            }
+
+            override fun onFailure(call: Call<List<JobItem>>, t: Throwable) {
+                Snackbar.make(btn_search, "error \n ${t.message}",Snackbar.LENGTH_LONG).show()
+            }
+        })
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        super.onRestoreInstanceState(savedInstanceState)
-        val jobs = savedInstanceState?.getParcelableArrayList<JobItem>("array")
-        adapterJobs.update(jobs)
+    private fun createConnected(){
+        Timber.plant(Timber.DebugTree())
+        val jobsComponent = DaggerJobsComponent
+            .builder()
+            .applicationContextModule(ApplicationContextModule(this))
+            .build()
+        picasso = jobsComponent.getPicasso()
+        jobsApi = jobsComponent.getJobsService()
+        initRecycler()
     }
-
     private fun initRecycler() {
-        adapterJobs = AdapterJobs {
+        adapterJobs = AdapterJobs(picasso) {
             val intent = Intent(this, JobAcitivity::class.java)
             intent.putExtra(JobAcitivity.DESC, it?.description)
             intent.putExtra(JobAcitivity.LOGO, it?.companyLogo)

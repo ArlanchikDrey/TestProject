@@ -11,7 +11,7 @@ import kotlinx.android.extensions.LayoutContainer
 import kotlinx.android.synthetic.main.jobs_item.*
 
 
-class AdapterJobs(val listener: (JobItem?) -> Unit) : RecyclerView.Adapter<AdapterJobs.MyViewHolder>() {
+class AdapterJobs(val picasso: Picasso, val listener: (JobItem?) -> Unit) : RecyclerView.Adapter<AdapterJobs.MyViewHolder>() {
 
     private var items: List<JobItem>? = listOf()
 
@@ -52,7 +52,7 @@ class AdapterJobs(val listener: (JobItem?) -> Unit) : RecyclerView.Adapter<Adapt
         }
 
         fun showLogo(url: String?){
-            Picasso.get().load(url).resize(65,65).into(ic_logo)
+            picasso.load(url).resize(65,65).into(ic_logo)
         }
 
         fun showTitle(s: String?){
